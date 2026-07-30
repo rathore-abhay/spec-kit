@@ -1,3 +1,7 @@
+---
+description: "Feature specification template for the Agentic Harness"
+---
+
 # Feature Specification: [FEATURE NAME]
 
 **Feature Branch**: `[###-feature-name]`
@@ -7,6 +11,17 @@
 **Status**: Draft
 
 **Input**: User description: "$ARGUMENTS"
+
+## Harness Quality Gates
+
+- **Task type**: [code_generation|refactoring|test_generation|documentation|security_review|architecture_design|complex_debugging|other]
+- **Primary benchmark**: [aa_coding_index|aa_intelligence_index|aa_agentic_index|tau2|none]
+- **Minimum benchmark score**: [number or N/A]
+- **Security sensitivity**: [low|medium|high]
+- **Performance sensitivity**: [low|medium|high]
+- **Human review required**: Yes for convergence; optional per implementation task unless marked mandatory below.
+
+Use measurable, buildable criteria in this section. Do not use business KPIs as implementation gates unless they require code changes.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -129,3 +144,8 @@
 - [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
 - [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
 - [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+
+## Graphify Context *(optional)*
+
+- **Relevant graph queries**: [queries or N/A]
+- **Required explanations**: [nodes, paths, or architecture areas to inspect]

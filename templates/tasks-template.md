@@ -3,6 +3,22 @@
 description: "Task list template for feature implementation"
 ---
 
+<!--
+  Agentic Harness task metadata contract. Every generated checklist task MUST
+  be followed by a YAML block with this shape:
+
+  routing:
+    route_hint: "aa_coding_index:50"
+    complexity: "medium"
+    files: ["src/path/to/file"]
+    depends_on: []
+    route_preference: "local-first"
+    human_review: false
+
+  route_hint uses <benchmark>:<minimum-score>. Use none for deterministic git
+  operations. Do not omit files or dependencies when they are known.
+-->
+
 # Tasks: [FEATURE NAME]
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
@@ -13,11 +29,13 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story] Description` followed by routing YAML
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
+- Follow every checklist item with a `routing` YAML block using the schema above
+- Set `human_review: true` for security, production, migration, or other gated work
 
 ## Path Conventions
 
@@ -250,3 +268,5 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+- The orchestrator must validate metadata before execution and stop on malformed YAML.
+- Checkpoints are mandatory after each task or logical parallel group.

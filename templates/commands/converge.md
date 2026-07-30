@@ -56,6 +56,8 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Goal
 
+**Harness convergence policy**: Run at most one convergence assessment per command invocation. Never auto-loop or silently rewrite artifacts. After appending tasks, stop and require a human decision before the next `/converge` invocation.
+
 Close the gap between what a feature's specification, plan, and tasks call for and what the
 codebase currently implements. Read `spec.md`, `plan.md`, and `tasks.md` as the **sole
 source of intent** (with the constitution as governing constraints), assess the current
@@ -232,6 +234,10 @@ Append to the **end** of `tasks.md`, per the append contract:
   run will find fewer or no remaining items.
 - On `converged`: recommend proceeding to review / opening a PR. No further implement pass
   is needed for this feature's specified scope.
+
+**Mandatory human review gate**: Before any follow-up implementation or convergence iteration,
+present the findings, appended task IDs, and proposed next command to the human. Do not invoke
+`/implement` or `/converge` automatically.
 
 ### 9. Check for extension hooks
 

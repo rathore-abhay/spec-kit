@@ -1,3 +1,7 @@
+---
+description: "Implementation plan template for the Agentic Harness"
+---
+
 # Implementation Plan: [FEATURE]
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
@@ -5,6 +9,14 @@
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `__SPECKIT_COMMAND_PLAN__` command; its definition describes the execution workflow.
+
+## Harness Routing Plan
+
+| Component or phase | Task type | Primary benchmark | Minimum score | Complexity | Route preference |
+|--------------------|-----------|-------------------|---------------|------------|------------------|
+| [component] | [task type] | [benchmark] | [score] | [low|medium|high] | [local-first|frontier] |
+
+Routing thresholds must be traceable to `BENCHMARK_ROUTING_TABLE.json`. Security-sensitive, production-mutating, and novel algorithm work must document the required escalation.
 
 ## Summary
 
@@ -110,4 +122,11 @@ directories captured above]
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+
+## Checkpoint Plan
+
+- **Subtask checkpoint cadence**: After every completed task or logical task group.
+- **Checkpoint record**: task ID, files changed, validation result, errors, route/model, and next dependencies.
+- **Memory action**: Archive completed work to `.agent_memory`; retain active task context and the last three summaries.
+- **Graphify synchronization**: Only after verified implementation is merged to the target branch.
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
