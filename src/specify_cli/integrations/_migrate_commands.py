@@ -331,6 +331,14 @@ def integration_switch(
 
     selected_script = _resolve_script_type(project_root, script)
 
+    # Resolve and validate target options before uninstalling the current
+    # integration. Invalid options must not leave the project partially
+    # switched with the previous integration already removed.
+    target_raw_options, target_parsed_options = _resolve_integration_options(
+        target_integration, current, target, integration_options
+    )
+    target_integration.is_skills_mode(target_parsed_options, project_root)
+
     # Phase 1: Uninstall current integration (if any)
     if installed_key:
         current_integration = get_integration(installed_key)
@@ -403,7 +411,10 @@ def integration_switch(
             fallback_key = installed_keys[0]
             fallback_integration = get_integration(fallback_key)
             if fallback_integration is not None:
-                raw_options, parsed_options = _resolve_integration_options(
+                (
+                    fallback_raw_options,
+                    fallback_parsed_options,
+                ) = _resolve_integration_options(
                     fallback_integration, current, fallback_key, None
                 )
                 _set_default_integration_or_exit(
@@ -412,8 +423,8 @@ def integration_switch(
                     fallback_key,
                     fallback_integration,
                     installed_keys,
-                    raw_options=raw_options,
-                    parsed_options=parsed_options,
+                    raw_options=fallback_raw_options,
+                    parsed_options=fallback_parsed_options,
                 )
             else:
                 _write_integration_json(
@@ -422,13 +433,6 @@ def integration_switch(
         else:
             _remove_integration_json(project_root)
         current = _read_integration_json(project_root)
-
-    # Build parsed options from --integration-options so the integration
-    # can determine its effective invoke separator before shared infra
-    # is installed.
-    raw_options, parsed_options = _resolve_integration_options(
-        target_integration, current, target, integration_options
-    )
 
     # Refresh shared infrastructure to the current CLI version. Switching
     # integrations is exactly when stale vendored shared scripts (e.g.
@@ -445,11 +449,11 @@ def integration_switch(
         force=refresh_shared_infra,
         refresh_managed=True,
         invoke_separator=_invoke_separator_for_integration(
-            target_integration, current, target, parsed_options,
+            target_integration, current, target, target_parsed_options,
             project_root=project_root,
         ),
         invoke_prefix=_invoke_prefix_for_integration(
-            target_integration, target, parsed_options, project_root
+            target_integration, target, target_parsed_options, project_root
         ),
         refresh_hint=(
             "To overwrite customizations, re-run with "
@@ -466,12 +470,20 @@ def integration_switch(
         target_integration.key, project_root, version=_get_speckit_version()
     )
 
+    from ..events import resolve_events
+    events_map = resolve_events(
+        target_integration.key,
+        target_integration.config,
+        project_root,
+        target_parsed_options,
+    )
     try:
         target_integration.setup(
             project_root, manifest,
-            parsed_options=parsed_options,
+            parsed_options=target_parsed_options,
             script_type=selected_script,
-            raw_options=raw_options,
+            raw_options=target_raw_options,
+            events=events_map,
         )
         manifest.save()
         _set_default_integration(
@@ -481,8 +493,8 @@ def integration_switch(
             target_integration,
             _dedupe_integration_keys([*installed_keys, target_integration.key]),
             script_type=selected_script,
-            raw_options=raw_options,
-            parsed_options=parsed_options,
+            raw_options=target_raw_options,
+            parsed_options=target_parsed_options,
         )
 
     except Exception as exc:
@@ -763,6 +775,13 @@ def integration_upgrade(
     console.print(f"Upgrading integration: [cyan]{key}[/cyan]")
     new_manifest = IntegrationManifest(key, project_root, version=_get_speckit_version())
 
+    from ..events import resolve_events
+    events_map = resolve_events(
+        key,
+        integration.config,
+        project_root,
+        parsed_options,
+    )
     try:
         integration.setup(
             project_root,
@@ -770,6 +789,7 @@ def integration_upgrade(
             parsed_options=parsed_options,
             script_type=selected_script,
             raw_options=raw_options,
+            events=events_map,
         )
         settings = _with_integration_setting(
             current,
@@ -870,6 +890,7 @@ def integration_upgrade(
         _register_extensions_for_agent(
             project_root,
             key,
+            force=True,
             continuing="The integration was upgraded, but installed extensions may need re-registration.",
         )
         _register_presets_for_agent(
